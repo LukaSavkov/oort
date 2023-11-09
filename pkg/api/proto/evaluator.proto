@@ -8,6 +8,7 @@ import "model.proto";
 
 service OortEvaluator {
   rpc Authorize(AuthorizationReq) returns (AuthorizationResp) {}
+  rpc GetGrantedPermissions(GetGrantedPermissionsReq) returns (GetGrantedPermissionsResp) {}
 }
 
 message AuthorizationReq {
@@ -19,4 +20,13 @@ message AuthorizationReq {
 
 message AuthorizationResp {
   bool authorized = 1;
+}
+
+message GetGrantedPermissionsReq {
+  Resource subject = 1;
+  repeated Attribute envAttributes = 2;
+}
+
+message GetGrantedPermissionsResp {
+  repeated GrantedPermission permissions = 1;
 }

@@ -2,6 +2,7 @@ package proto
 
 import (
 	"errors"
+
 	"github.com/c12s/oort/internal/domain"
 	"github.com/c12s/oort/pkg/api"
 	"github.com/golang/protobuf/proto"
@@ -62,6 +63,13 @@ func ResourceToDomain(res *api.Resource) (*domain.Resource, error) {
 	return domain.NewResource(res.Id, res.Kind)
 }
 
+func ResourceFromDomain(res *domain.Resource) (*api.Resource, error) {
+	return &api.Resource{
+		Id:   res.Id(),
+		Kind: res.Kind(),
+	}, nil
+}
+
 func PermissionToDomain(perm *api.Permission) (*domain.Permission, error) {
 	condition, err := domain.NewCondition(perm.Condition.Expression)
 	if err != nil {
@@ -70,4 +78,15 @@ func PermissionToDomain(perm *api.Permission) (*domain.Permission, error) {
 	return domain.NewPermission(perm.Name,
 		domain.PermissionKind(perm.Kind),
 		*condition)
+}
+
+func GrantedPermissionFromDomain(perm *domain.GrantedPermission) (*api.GrantedPermission, error) {
+	object, err := ResourceFromDomain(&perm.Object)
+	if err != nil {
+		return nil, err
+	}
+	return &api.GrantedPermission{
+		Name:   perm.PermissionName,
+		Object: object,
+	}, nil
 }

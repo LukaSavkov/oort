@@ -2,10 +2,10 @@ package servers
 
 import (
 	"context"
+
 	"github.com/c12s/oort/internal/mappers/proto"
 	"github.com/c12s/oort/internal/services"
 	"github.com/c12s/oort/pkg/api"
-	"log"
 )
 
 type oortEvaluatorGrpcServer struct {
@@ -25,6 +25,18 @@ func (o *oortEvaluatorGrpcServer) Authorize(ctx context.Context, req *api.Author
 		return nil, err
 	}
 	resp := o.service.Authorize(*reqDomain)
-	log.Println(resp)
 	return &api.AuthorizationResp{Authorized: resp.Authorized}, resp.Error
+}
+
+// GetGrantedPermissions implements api.OortEvaluatorServer.
+func (o *oortEvaluatorGrpcServer) GetGrantedPermissions(ctx context.Context, req *api.GetGrantedPermissionsReq) (*api.GetGrantedPermissionsResp, error) {
+	reqDomain, err := proto.GetGrantedPermissionsReqToDomain(req)
+	if err != nil {
+		return nil, err
+	}
+	resp := o.service.GetGrantedPermissions(*reqDomain)
+	if resp.Error != nil {
+		return nil, resp.Error
+	}
+	return proto.GetGrantedPermissionsRespFromDomain(&resp)
 }
