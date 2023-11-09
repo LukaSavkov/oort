@@ -1,6 +1,8 @@
 package services
 
 import (
+	"log"
+
 	"github.com/c12s/oort/internal/domain"
 )
 
@@ -21,16 +23,25 @@ func (h EvaluationService) Authorize(req domain.AuthorizationReq) domain.Authori
 		PermissionName: req.PermissionName,
 	})
 	if resp.Error != nil {
-		return errorResponse(resp.Error)
+		return domain.AuthorizationResp{
+			Authorized: false,
+			Error:      resp.Error,
+		}
 	}
 
 	subAttrs, err := h.getAttributes(req.Subject)
 	if err != nil {
-		return errorResponse(err)
+		return domain.AuthorizationResp{
+			Authorized: false,
+			Error:      err,
+		}
 	}
 	objAttrs, err := h.getAttributes(req.Object)
 	if err != nil {
-		return errorResponse(err)
+		return domain.AuthorizationResp{
+			Authorized: false,
+			Error:      err,
+		}
 	}
 
 	evalReq := domain.PermissionEvalRequest{
@@ -48,6 +59,61 @@ func (h EvaluationService) Authorize(req domain.AuthorizationReq) domain.Authori
 	return checkResp
 }
 
+func (h EvaluationService) GetGrantedPermissions(req domain.GetGrantedPermissionsReq) domain.GetGrantedPermissionsResp {
+	// dobavi sve politike koje su subjektno direktno dodeljene ili ih je nasledio
+	// svaka ukljucuje naziv dozvole i objekat nad kojim vazi
+	resp := h.repo.GetApplicablePolicies(domain.GetApplicablePoliciesReq{
+		Subject: req.Subject,
+	})
+	if resp.Error != nil {
+		return domain.GetGrantedPermissionsResp{Error: resp.Error}
+	}
+
+	granted := make([]domain.GrantedPermission, 0)
+
+	subAttrs, err := h.getAttributes(req.Subject)
+	if err != nil {
+		return domain.GetGrantedPermissionsResp{Error: resp.Error}
+	}
+
+	// za svaki policy proveri da li trenutno daje dozvolu subjektu
+	for _, policy := range resp.Policies {
+		objAttrs, err := h.getAttributes(policy.Object)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		hierarchyResp := h.repo.GetPermissionHierarchy(domain.GetPermissionHierarchyReq{
+			Subject:        req.Subject,
+			Object:         policy.Object,
+			PermissionName: policy.PermissionName,
+		})
+		if hierarchyResp.Error != nil {
+			log.Println(hierarchyResp.Error)
+			continue
+		}
+
+		evalReq := domain.PermissionEvalRequest{
+			Subject: subAttrs,
+			Object:  objAttrs,
+			Env:     req.Env,
+		}
+		evalResp := hierarchyResp.Hierarchy.Eval(evalReq)
+		if authorized(evalResp) {
+			granted = append(granted, domain.GrantedPermission{
+				PermissionName: policy.PermissionName,
+				Object:         policy.Object,
+			})
+		}
+	}
+
+	return domain.GetGrantedPermissionsResp{
+		Permissions: granted,
+		Error:       nil,
+	}
+}
+
 func (h EvaluationService) getAttributes(resource domain.Resource) ([]domain.Attribute, error) {
 	res := h.repo.GetResource(domain.GetResourceReq{Resource: resource})
 	if res.Error != nil {
@@ -56,16 +122,6 @@ func (h EvaluationService) getAttributes(resource domain.Resource) ([]domain.Att
 	return res.Resource.Attributes, nil
 }
 
-func errorResponse(err error) domain.AuthorizationResp {
-	return domain.AuthorizationResp{
-		Authorized: false,
-		Error:      err,
-	}
-}
-
 func authorized(result domain.EvalResult) bool {
-	if result == domain.EvalResultAllowed {
-		return true
-	}
-	return false
+	return result == domain.EvalResultAllowed
 }

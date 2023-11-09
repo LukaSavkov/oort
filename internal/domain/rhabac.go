@@ -113,3 +113,18 @@ type Policy struct {
 	Subject,
 	Object Resource
 }
+
+type GetGrantedPermissionsReq struct {
+	Subject Resource
+	Env     []Attribute
+}
+
+type GetGrantedPermissionsResp struct {
+	Permissions []GrantedPermission
+	Error       error
+}
+
+type GrantedPermission struct {
+	PermissionName string
+	Object         Resource
+}
