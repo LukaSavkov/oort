@@ -75,13 +75,19 @@ func (h EvaluationService) GetGrantedPermissions(req domain.GetGrantedPermission
 	if err != nil {
 		return domain.GetGrantedPermissionsResp{Error: resp.Error}
 	}
+	// proveravamo nad vise objekata, svaki objekat je element u mapi
+	objAttrMap := make(map[string][]domain.Attribute)
 
 	// za svaki policy proveri da li trenutno daje dozvolu subjektu
 	for _, policy := range resp.Policies {
-		objAttrs, err := h.getAttributes(policy.Object)
-		if err != nil {
-			log.Println(err)
-			continue
+		objAttrs, ok := objAttrMap[policy.Object.Name()]
+		if !ok {
+			objAttrs, err = h.getAttributes(policy.Object)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			objAttrMap[policy.Object.Name()] = objAttrs
 		}
 
 		hierarchyResp := h.repo.GetPermissionHierarchy(domain.GetPermissionHierarchyReq{
