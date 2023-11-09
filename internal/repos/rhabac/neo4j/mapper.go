@@ -2,10 +2,10 @@ package neo4j
 
 import (
 	"errors"
-	"fmt"
+	"log"
+
 	"github.com/c12s/oort/internal/domain"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"log"
 )
 
 func getResource(cypherResult interface{}) *domain.Resource {
@@ -68,7 +68,7 @@ func getHierarchy(cypherResult interface{}) (domain.PermissionHierarchy, error) 
 		}
 		subPriorityInt, ok := recordElems[3].(int64)
 		if !ok {
-			log.Println(fmt.Sprintf("%T", recordElems[3]))
+			log.Printf("%T\n", recordElems[3])
 			return domain.PermissionHierarchy{}, errors.New("invalid record elem type - perm sub priority")
 		}
 		subPriority := domain.PermissionPriority(subPriorityInt)
@@ -104,4 +104,38 @@ func getHierarchy(cypherResult interface{}) (domain.PermissionHierarchy, error) 
 		hierarchy[subPriority] = objHierarchy
 	}
 	return hierarchy, nil
+}
+
+func getPolicies(cypherResult interface{}) ([]domain.Policy, error) {
+	records, ok := cypherResult.([]*neo4j.Record)
+	log.Println(len(records))
+	if !ok {
+		return nil, errors.New("invalid resp format")
+	}
+
+	policies := make([]domain.Policy, 0)
+	for _, record := range records {
+		recordElems := record.Values
+		if !ok {
+			return nil, errors.New("invalid resp format")
+		}
+
+		permName, ok := recordElems[0].(string)
+		if !ok {
+			return nil, errors.New("invalid record elem type - perm name")
+		}
+		objName, ok := recordElems[1].(string)
+		if !ok {
+			return nil, errors.New("invalid record elem type - object name")
+		}
+		object, err := domain.NewResourceFromName(objName)
+		if err != nil {
+			return nil, err
+		}
+		policies = append(policies, domain.Policy{
+			PermissionName: permName,
+			Object:         *object,
+		})
+	}
+	return policies, nil
 }

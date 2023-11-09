@@ -11,6 +11,7 @@ type RHABACRepo interface {
 	CreatePolicy(req CreatePolicyReq) AdministrationResp
 	DeletePolicy(req DeletePolicyReq) AdministrationResp
 	GetPermissionHierarchy(req GetPermissionHierarchyReq) GetPermissionHierarchyResp
+	GetApplicablePolicies(req GetApplicablePoliciesReq) GetApplicablePoliciesResp
 }
 
 type CreateResourceReq struct {
@@ -96,4 +97,19 @@ type AuthorizationReq struct {
 type AuthorizationResp struct {
 	Authorized bool
 	Error      error
+}
+
+type GetApplicablePoliciesReq struct {
+	Subject Resource
+}
+
+type GetApplicablePoliciesResp struct {
+	Policies []Policy
+	Error    error
+}
+
+type Policy struct {
+	PermissionName string
+	Subject,
+	Object Resource
 }

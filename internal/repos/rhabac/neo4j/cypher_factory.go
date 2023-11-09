@@ -15,6 +15,7 @@ type CypherFactory interface {
 	createPolicy(req domain.CreatePolicyReq) (string, map[string]interface{})
 	deletePolicy(req domain.DeletePolicyReq) (string, map[string]interface{})
 	getEffectivePermissionsWithPriority(req domain.GetPermissionHierarchyReq) (string, map[string]interface{})
+	getApplicablePolicies(req domain.GetApplicablePoliciesReq) (string, map[string]interface{})
 }
 
 type simpleCypherFactory struct {
@@ -204,6 +205,19 @@ func (f simpleCypherFactory) getEffectivePermissionsWithPriority(req domain.GetP
 			"subName":  req.Subject.Name(),
 			"objName":  req.Object.Name(),
 			"permName": req.PermissionName}
+}
+
+const ncGetApplicablePoliciesCypher = `
+MATCH (sub:Resource{name: $subName})-[:INHERITS_FROM*0..]->(subParent:Resource)-[:HAS]->
+(p:Permission)-[:ON]->(objParent:Resource)<-[:INHERITS_FROM*0..]-(obj:Resource)
+RETURN DISTINCT p.name, obj.name
+`
+
+func (f simpleCypherFactory) getApplicablePolicies(req domain.GetApplicablePoliciesReq) (string, map[string]interface{}) {
+	return ncGetApplicablePoliciesCypher,
+		map[string]interface{}{
+			"subName": req.Subject.Name(),
+		}
 }
 
 // todo: sredi ovo

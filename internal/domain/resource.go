@@ -1,6 +1,10 @@
 package domain
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 var (
 	RootResource = Resource{resourceId{"", "root"}, nil}
@@ -17,6 +21,21 @@ type Resource struct {
 }
 
 func NewResource(id, kind string) (*Resource, error) {
+	return &Resource{
+		id: resourceId{
+			id:   id,
+			kind: kind,
+		},
+	}, nil
+}
+
+func NewResourceFromName(name string) (*Resource, error) {
+	split := strings.Split(name, "/")
+	if len(split) != 2 {
+		return nil, errors.New("invalid resource name format")
+	}
+	kind := split[0]
+	id := split[1]
 	return &Resource{
 		id: resourceId{
 			id:   id,
