@@ -31,11 +31,11 @@ func NewResource(id, kind string) (*Resource, error) {
 
 func NewResourceFromName(name string) (*Resource, error) {
 	split := strings.Split(name, "/")
-	if len(split) != 2 {
+	if len(split) < 2 {
 		return nil, errors.New("invalid resource name format")
 	}
 	kind := split[0]
-	id := split[1]
+	id := strings.Join(split[1:], "/")
 	return &Resource{
 		id: resourceId{
 			id:   id,

@@ -28,7 +28,6 @@ func (o *oortEvaluatorGrpcServer) Authorize(ctx context.Context, req *api.Author
 	return &api.AuthorizationResp{Authorized: resp.Authorized}, resp.Error
 }
 
-// GetGrantedPermissions implements api.OortEvaluatorServer.
 func (o *oortEvaluatorGrpcServer) GetGrantedPermissions(ctx context.Context, req *api.GetGrantedPermissionsReq) (*api.GetGrantedPermissionsResp, error) {
 	reqDomain, err := proto.GetGrantedPermissionsReqToDomain(req)
 	if err != nil {
