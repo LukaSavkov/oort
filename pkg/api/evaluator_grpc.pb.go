@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OortEvaluatorClient interface {
 	Authorize(ctx context.Context, in *AuthorizationReq, opts ...grpc.CallOption) (*AuthorizationResp, error)
+	GetGrantedPermissions(ctx context.Context, in *GetGrantedPermissionsReq, opts ...grpc.CallOption) (*GetGrantedPermissionsResp, error)
 }
 
 type oortEvaluatorClient struct {
@@ -42,11 +43,21 @@ func (c *oortEvaluatorClient) Authorize(ctx context.Context, in *AuthorizationRe
 	return out, nil
 }
 
+func (c *oortEvaluatorClient) GetGrantedPermissions(ctx context.Context, in *GetGrantedPermissionsReq, opts ...grpc.CallOption) (*GetGrantedPermissionsResp, error) {
+	out := new(GetGrantedPermissionsResp)
+	err := c.cc.Invoke(ctx, "/proto.OortEvaluator/GetGrantedPermissions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OortEvaluatorServer is the server API for OortEvaluator service.
 // All implementations must embed UnimplementedOortEvaluatorServer
 // for forward compatibility
 type OortEvaluatorServer interface {
 	Authorize(context.Context, *AuthorizationReq) (*AuthorizationResp, error)
+	GetGrantedPermissions(context.Context, *GetGrantedPermissionsReq) (*GetGrantedPermissionsResp, error)
 	mustEmbedUnimplementedOortEvaluatorServer()
 }
 
@@ -56,6 +67,9 @@ type UnimplementedOortEvaluatorServer struct {
 
 func (UnimplementedOortEvaluatorServer) Authorize(context.Context, *AuthorizationReq) (*AuthorizationResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Authorize not implemented")
+}
+func (UnimplementedOortEvaluatorServer) GetGrantedPermissions(context.Context, *GetGrantedPermissionsReq) (*GetGrantedPermissionsResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGrantedPermissions not implemented")
 }
 func (UnimplementedOortEvaluatorServer) mustEmbedUnimplementedOortEvaluatorServer() {}
 
@@ -88,6 +102,24 @@ func _OortEvaluator_Authorize_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OortEvaluator_GetGrantedPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGrantedPermissionsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OortEvaluatorServer).GetGrantedPermissions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.OortEvaluator/GetGrantedPermissions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OortEvaluatorServer).GetGrantedPermissions(ctx, req.(*GetGrantedPermissionsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OortEvaluator_ServiceDesc is the grpc.ServiceDesc for OortEvaluator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +130,10 @@ var OortEvaluator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Authorize",
 			Handler:    _OortEvaluator_Authorize_Handler,
+		},
+		{
+			MethodName: "GetGrantedPermissions",
+			Handler:    _OortEvaluator_GetGrantedPermissions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

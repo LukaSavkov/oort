@@ -58,3 +58,8 @@ message Permission {
 message Condition {
   string expression = 1;
 }
+
+message GrantedPermission {
+  string name = 1;
+  Resource object = 2;
+}

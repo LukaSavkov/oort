@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/c12s/oort/internal/configs"
-	"github.com/c12s/oort/internal/startup"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/c12s/oort/internal/configs"
+	"github.com/c12s/oort/internal/startup"
 )
 
 func main() {

@@ -2,6 +2,7 @@ package neo4j
 
 import (
 	"errors"
+
 	"github.com/c12s/oort/internal/domain"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -92,4 +93,14 @@ func (store RHABACRepo) GetPermissionHierarchy(req domain.GetPermissionHierarchy
 
 	hierarchy, err := getHierarchy(records)
 	return domain.GetPermissionHierarchyResp{Hierarchy: hierarchy, Error: err}
+}
+
+func (store RHABACRepo) GetApplicablePolicies(req domain.GetApplicablePoliciesReq) domain.GetApplicablePoliciesResp {
+	cypher, params := store.factory.getApplicablePolicies(req)
+	records, err := store.manager.ReadTransaction(cypher, params)
+	if err != nil {
+		return domain.GetApplicablePoliciesResp{Policies: nil, Error: err}
+	}
+	policies, err := getPolicies(records)
+	return domain.GetApplicablePoliciesResp{Policies: policies, Error: err}
 }
