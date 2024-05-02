@@ -4,20 +4,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/c12s/magnetar/pkg/messaging"
-	"github.com/c12s/magnetar/pkg/messaging/nats"
+	"log"
+	"net"
+	"sync"
+
 	"github.com/c12s/oort/internal/configs"
 	"github.com/c12s/oort/internal/domain"
 	"github.com/c12s/oort/internal/repos/rhabac/neo4j"
 	"github.com/c12s/oort/internal/servers"
 	"github.com/c12s/oort/internal/services"
 	"github.com/c12s/oort/pkg/api"
+	"github.com/c12s/oort/pkg/messaging"
+	"github.com/c12s/oort/pkg/messaging/nats"
 	natsgo "github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
-	"sync"
 )
 
 type app struct {
@@ -240,7 +241,7 @@ func (a *app) startGrpcServer() error {
 	}()
 	a.gracefulShutdownProcesses = append(a.gracefulShutdownProcesses, func(wg *sync.WaitGroup) {
 		a.grpcServer.GracefulStop()
-		log.Println("magnetar server gracefully stopped")
+		log.Println("oort server gracefully stopped")
 		wg.Done()
 	})
 	return nil

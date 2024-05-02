@@ -6,7 +6,6 @@ toolchain go1.21.4
 
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
-	github.com/c12s/magnetar v1.0.0
 	github.com/golang/protobuf v1.5.3
 	github.com/nats-io/nats.go v1.31.0
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.1
@@ -24,5 +23,3 @@ require (
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
 )
-
-replace github.com/c12s/magnetar => ../magnetar

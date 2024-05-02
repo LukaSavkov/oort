@@ -1,12 +1,13 @@
 package servers
 
 import (
-	"github.com/c12s/magnetar/pkg/messaging"
+	"log"
+
 	"github.com/c12s/oort/internal/domain"
 	"github.com/c12s/oort/internal/mappers/proto"
 	"github.com/c12s/oort/internal/services"
 	"github.com/c12s/oort/pkg/api"
-	"log"
+	"github.com/c12s/oort/pkg/messaging"
 )
 
 type AdministratorAsyncServer struct {

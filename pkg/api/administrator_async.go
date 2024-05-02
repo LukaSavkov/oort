@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
-	"github.com/c12s/magnetar/pkg/messaging"
-	"github.com/c12s/magnetar/pkg/messaging/nats"
+	"github.com/c12s/oort/pkg/messaging"
+	"github.com/c12s/oort/pkg/messaging/nats"
 	natsgo "github.com/nats-io/nats.go"
 	"log"
 )
